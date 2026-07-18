@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Horizon - 3D Realistic Journey</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="grid-overlay"></div>
+
+    <div class="game-container">
+        <!-- HUD Overlay (Runs during play) -->
+        <div class="hud-container">
+            <div id="score" class="score-display">0</div>
+            <div class="hud-buttons">
+                <button id="soundToggle" class="hud-btn" title="Toggle Sound">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                </button>
+                <button id="pauseBtn" class="hud-btn" title="Pause Game">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="4" x2="18" y2="20"></line>
+                        <line x1="6" y1="4" x2="6" y2="20"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Shield HUD indicator -->
+        <div id="shieldHud" class="shield-hud">
+            <div class="shield-hud-icon"></div>
+            <span>SHIELD ACTIVE</span>
+        </div>
+
+        <!-- Camera PIP Preview Container -->
+        <div id="cameraPreviewContainer">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="cameraCanvas"></canvas>
+            <div id="cameraStatus">NEURAL INITIALIZING...</div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas" width="600" height="800"></canvas>
+
+        <!-- Start Overlay -->
+        <div id="startOverlay" class="overlay active">
+            <h1>FLAPPY<span>HORIZON</span></h1>
+            
+            <div class="menu-group">
+                <div class="menu-label">Select Difficulty</div>
+                <div class="selector-row">
+                    <button class="selector-btn difficulty-btn" data-diff="easy">Easy</button>
+                    <button class="selector-btn difficulty-btn active" data-diff="medium">Normal</button>
+                    <button class="selector-btn difficulty-btn" data-diff="hard">Hard</button>
+                </div>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-label">Select Skin</div>
+                <div class="selector-row">
+                    <button class="selector-btn skin-btn active" data-skin="classic">
+                        <div class="skin-preview" style="color: #ffb703; background: #ffb703;"></div>
+                        Classic
+                    </button>
+                    <button class="selector-btn skin-btn" data-skin="cyber">
+                        <div class="skin-preview" style="color: #00f0ff; background: #00f0ff;"></div>
+                        Cyber
+                    </button>
+                    <button class="selector-btn skin-btn" data-skin="phoenix">
+                        <div class="skin-preview" style="color: #ff007f; background: #ff007f;"></div>
+                        Phoenix
+                    </button>
+                    <button class="selector-btn skin-btn" data-skin="midnight">
+                        <div class="skin-preview" style="color: #9d4edd; background: #9d4edd;"></div>
+                        Shadow
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-label">Control System</div>
+                <div class="selector-row">
+                    <button class="selector-btn control-btn active" data-control="keyboard">Keyboard</button>
+                    <button class="selector-btn control-btn" data-control="motion">Webcam Gesture</button>
+                </div>
+            </div>
+
+            <div class="menu-group" style="margin-top: 15px; margin-bottom: 20px; width: 100%;">
+                <div class="menu-label">Pilot Name</div>
+                <input type="text" id="playerNameInput" class="pilot-input" maxlength="25" placeholder="ENTER PILOT NAME">
+            </div>
+
+            <button id="playBtn" class="btn-play">TAKE OFF</button>
+
+            <div class="leaderboard" style="margin-top: 15px; margin-bottom: 5px; width: 100%;">
+                <div class="leaderboard-title">Global Leaderboard</div>
+                <div id="startLeaderboardList" class="leaderboard-list" style="max-height: 120px;">
+                    <!-- Dynamic entries will go here -->
+                </div>
+            </div>
+
+            <div class="instructions">
+                <div id="keyboardInstruct">Press <span class="keyboard-key">SPACE</span> or <span class="keyboard-key">CLICK</span> to fly</div>
+                <div id="motionInstruct" style="display: none; color: var(--accent-color);">Move hand <span class="keyboard-key">UP</span> / <span class="keyboard-key">DOWN</span> in camera view</div>
+                <div>Press <span class="keyboard-key">P</span> to pause</div>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pauseOverlay" class="overlay">
+            <div class="pause-text">GAME PAUSED</div>
+            <div class="pause-tip" id="pauseTipText">Press SPACE or CLICK to resume flight</div>
+            <button id="resumeBtn" class="btn-play">RESUME FLIGHT</button>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div id="gameOverOverlay" class="overlay">
+            <h1>FLIGHT OVER<span>SUMMARY</span></h1>
+            
+            <div class="stats-container">
+                <div class="stat-row">
+                    <span class="stat-label">FINAL SCORE</span>
+                    <span id="finalScore" class="stat-val score">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">PERSONAL BEST</span>
+                    <span id="bestScore" class="stat-val high">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">LEVEL COMPLETED</span>
+                    <span id="statLevel" class="stat-val">Normal</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px; width: 100%;">
+                <button id="restartBtn" class="btn-play" style="flex: 1; margin: 0;">FLY AGAIN</button>
+                <button id="changePilotBtn" class="btn-play" style="flex: 1; margin: 0; background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); box-shadow: none;">CHANGE PILOT</button>
+            </div>
+
+            <div class="leaderboard">
+                <div class="leaderboard-title">Global Leaderboard</div>
+                <div id="leaderboardList" class="leaderboard-list">
+                    <!-- Dynamic entries will go here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load game.js as an ES Module to support MediaPipe imports -->
+    <script src="game.js" type="module"></script>
+</body>
+</html>
